@@ -33,9 +33,11 @@ struct GrepProcessor {
 
     /// Local write buffers
     local_buffer: Vec<u8>,
+    local_counter: usize,
 
     /// Global values
     global_writer: Arc<Mutex<BoxedWriter>>,
+    global_counter: Arc<Mutex<usize>>,
 }
 impl GrepProcessor {
     #[allow(clippy::too_many_arguments)]
@@ -59,6 +61,8 @@ impl GrepProcessor {
             invert,
             global_writer: Arc::new(Mutex::new(output)),
             local_buffer: Vec::with_capacity(DEFAULT_BUFFER_SIZE),
+            local_counter: 0,
+            global_counter: Arc::new(Mutex::new(0)),
         }
     }
 
@@ -136,6 +140,7 @@ impl ParallelProcessor for GrepProcessor {
     ) -> paraseq::parallel::Result<()> {
         if self.pattern_match(record.seq(), &[]) {
             self.write_record(record)?;
+            self.local_counter += 1;
         }
         Ok(())
     }
@@ -146,6 +151,9 @@ impl ParallelProcessor for GrepProcessor {
             global_writer.flush()?;
         }
         self.local_buffer.clear();
+
+        *self.global_counter.lock() += self.local_counter;
+        self.local_counter = 0;
         Ok(())
     }
 }
@@ -158,6 +166,7 @@ impl PairedParallelProcessor for GrepProcessor {
         if self.pattern_match(record1.seq(), record2.seq()) {
             self.write_record(record1)?;
             self.write_record(record2)?;
+            self.local_counter += 1;
         }
         Ok(())
     }
@@ -169,6 +178,9 @@ impl PairedParallelProcessor for GrepProcessor {
             global_writer.flush()?;
         }
         self.local_buffer.clear();
+
+        *self.global_counter.lock() += self.local_counter;
+        self.local_counter = 0;
         Ok(())
     }
 }
