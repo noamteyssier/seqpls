@@ -1,0 +1,19 @@
+[package]
+name = "seqpls"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1.0.98"
+clap = { version = "4.5.37", features = ["derive"] }
+memchr = "2.7.4"
+paraseq = "0.1.4"
+parking_lot = "0.12.3"
+regex = "1.11.1"
+niffler = { version = "3.0.0", default-features = false, features = ["gz"] }
+flate2 = { version = "1.0.35", default-features = false, features = [
+    "zlib-ng",
+] }
+
+[profile.release]
+debug = true
