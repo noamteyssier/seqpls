@@ -30,6 +30,7 @@ struct GrepProcessor {
 
     /// Invert the pattern selection
     invert: bool,
+    count: bool,
 
     /// Local write buffers
     local_buffer: Vec<u8>,
@@ -49,6 +50,7 @@ impl GrepProcessor {
         re2: Expressions,
         re: Expressions,
         invert: bool,
+        count: bool,
         output: BoxedWriter,
     ) -> Self {
         Self {
@@ -59,6 +61,7 @@ impl GrepProcessor {
             re2,
             re,
             invert,
+            count,
             global_writer: Arc::new(Mutex::new(output)),
             local_buffer: Vec::with_capacity(DEFAULT_BUFFER_SIZE),
             local_counter: 0,
@@ -123,6 +126,10 @@ impl GrepProcessor {
     }
 
     pub fn write_record<Rf: Record>(&mut self, record: Rf) -> Result<()> {
+        // skip writes if only counting
+        if self.count {
+            return Ok(());
+        }
         self.local_buffer.write(b"@")?;
         self.local_buffer.extend_from_slice(record.id());
         self.local_buffer.write(b"\n")?;
@@ -131,6 +138,10 @@ impl GrepProcessor {
         self.local_buffer.extend_from_slice(record.qual().unwrap());
         self.local_buffer.write(b"\n")?;
         Ok(())
+    }
+
+    pub fn pprint_counts(&self) {
+        println!("{}", self.global_counter.lock())
     }
 }
 impl ParallelProcessor for GrepProcessor {
@@ -145,7 +156,7 @@ impl ParallelProcessor for GrepProcessor {
         Ok(())
     }
     fn on_batch_complete(&mut self) -> paraseq::parallel::Result<()> {
-        {
+        if !self.count {
             let mut global_writer = self.global_writer.lock();
             global_writer.write_all(&self.local_buffer)?;
             global_writer.flush()?;
@@ -172,7 +183,7 @@ impl PairedParallelProcessor for GrepProcessor {
     }
 
     fn on_batch_complete(&mut self) -> paraseq::parallel::Result<()> {
-        {
+        if !self.count {
             let mut global_writer = self.global_writer.lock();
             global_writer.write_all(&self.local_buffer)?;
             global_writer.flush()?;
@@ -199,6 +210,7 @@ fn grep_paired(
     output: Option<String>,
     num_threads: usize,
     args: &GrepArgs,
+    count: bool,
 ) -> Result<()> {
     let (r1_handle, _comp) = niffler::send::from_path(r1_path)?;
     let (r2_handle, _comp) = niffler::send::from_path(r2_path)?;
@@ -215,10 +227,14 @@ fn grep_paired(
         args.bytes_reg2(),
         args.bytes_reg(),
         args.invert,
+        count,
         output,
     );
 
-    r1_reader.process_parallel_paired(r2_reader, processor, num_threads)?;
+    r1_reader.process_parallel_paired(r2_reader, processor.clone(), num_threads)?;
+    if count {
+        processor.pprint_counts();
+    }
 
     Ok(())
 }
@@ -228,6 +244,7 @@ fn grep_single(
     output: Option<String>,
     num_threads: usize,
     args: &GrepArgs,
+    count: bool,
 ) -> Result<()> {
     let (r1_handle, _comp) = niffler::send::from_path(r1_path)?;
 
@@ -242,10 +259,14 @@ fn grep_single(
         args.bytes_reg2(),
         args.bytes_reg(),
         args.invert,
+        count,
         output,
     );
 
-    r1_reader.process_parallel(processor, num_threads)?;
+    r1_reader.process_parallel(processor.clone(), num_threads)?;
+    if count {
+        processor.pprint_counts();
+    }
 
     Ok(())
 }
@@ -261,9 +282,16 @@ fn main() -> Result<()> {
             args.output,
             args.threads,
             &args.grep,
+            args.count,
         )
     } else if args.inputs.len() == 1 {
-        grep_single(&args.inputs[0], args.output, args.threads, &args.grep)
+        grep_single(
+            &args.inputs[0],
+            args.output,
+            args.threads,
+            &args.grep,
+            args.count,
+        )
     } else {
         bail!("Must provide either 1 or 2 input files")
     }
@@ -279,6 +307,10 @@ pub struct GrepCommand {
     /// Output file path [default: stdout]
     #[clap(short = 'o', long)]
     pub output: Option<String>,
+
+    /// Only count the number of matching records
+    #[clap(short = 'c', long)]
+    pub count: bool,
 
     /// Number of threads to use [default: 1]
     #[clap(short = 'T', long, default_value_t = 1)]
