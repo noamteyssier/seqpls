@@ -16,4 +16,5 @@ flate2 = { version = "1.0.35", default-features = false, features = [
 ] }
 
 [profile.release]
-debug = true
+lto = true
+codegen-units = 1
