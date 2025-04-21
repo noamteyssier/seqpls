@@ -2,7 +2,7 @@
 
 This is a paired FASTQ grep tool for sequence analysis.
 
-It's built using the same matching algorithm as [`bqtools grep`](https://github.com/arcinstitute/bqtools), and was developed to showcase the difference between BINSEQ and FASTQ formats.
+It's built using the same matching algorithm as [`bqtools grep`](https://github.com/arcinstitute/bqtools), and was developed to [demonstrate the performance difference between BINSEQ and FASTQ formats](https://noamteyssier.github.io/2025-04-20/).
 
 It accepts FASTQ files (compressed or uncompressed) and lets you match on regular expressions or fixed strings on either the R1, R2 or both.
 
