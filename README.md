@@ -11,7 +11,7 @@ It accepts FASTQ files (compressed or uncompressed) and lets you match on regula
 
 Under the hood it uses the [`paraseq`](https://github.com/noamteyssier/paraseq) crate for efficient parallel processing of FASTQ records.
 
-It's fast - but **don't use it** because using [bqtools](https://github.com/arcinstitute/bqtools) on [binseq](https://github.com/arcinstitute/binseq) is significantly faster.
+It's fast - but **don't use it** because using [bqtools](https://github.com/arcinstitute/bqtools) on [binseq](https://github.com/arcinstitute/binseq) files is significantly faster.
 
 ## Installation
 
