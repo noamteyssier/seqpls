@@ -21,6 +21,9 @@ seqpls --help
 # Search for a fixed string in an unpaired FASTQ file
 seqpls -e "ACGT" <some_fastq>
 
-# Search for a fixed string in the R1 and a regex in the R2 using 3 threads
+# Search for a string in the R1 and a regex in the R2
 seqpls -T3 -e "ACGT" -R "[AC][TG][AC][TG]" <some_r1> <some_r2>
+
+# Filter sequences without string in either using 3 threads
+seqpls -T3 -v -F "ACGT" <some_r1> <some_r2>
 ```
