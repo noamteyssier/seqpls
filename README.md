@@ -1,7 +1,7 @@
 # seqpls
 
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE.md)
-[![Crates.io](https://img.shields.io/crates/d/bqtools?color=orange&label=crates.io)](https://crates.io/crates/seqpls)
+[![Crates.io](https://img.shields.io/crates/d/seqpls?color=orange&label=crates.io)](https://crates.io/crates/seqpls)
 
 This is a paired FASTQ grep tool for sequence analysis.
 
