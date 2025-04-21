@@ -297,7 +297,7 @@ fn main() -> Result<()> {
     }
 }
 
-/// Grep a BINSEQ file and output to FASTQ or FASTA.
+/// Grep single-end or paired-end FASTQ files.
 #[derive(Parser, Debug)]
 pub struct GrepCommand {
     /// Input file paths (two files are assumed paired)

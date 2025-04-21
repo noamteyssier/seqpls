@@ -1,5 +1,8 @@
 # seqpls
 
+[![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE.md)
+[![Crates.io](https://img.shields.io/crates/d/bqtools?color=orange&label=crates.io)](https://crates.io/crates/seqpls)
+
 This is a paired FASTQ grep tool for sequence analysis.
 
 It's built using the same matching algorithm as [`bqtools grep`](https://github.com/arcinstitute/bqtools), and was developed to [demonstrate the performance difference between BINSEQ and FASTQ formats](https://noamteyssier.github.io/2025-04-20/).
